@@ -24,4 +24,8 @@ export default {
   border-radius: 0px !important;
 }
 
+body{
+  background-color: #efe7e8 !important;
+}
+
 </style>
