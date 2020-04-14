@@ -4,15 +4,28 @@
             <div class="card">
                 <div class="card-body">
                     <h3 class="text-center my-4">Signup</h3>
+
                     <div class="form-group">
-                        <input v-model="name" type="text" class="form-control" placeholder="Name">
+                        <input v-bind:class="{ 'is_invalid': errors.name, 'is_valid': !errors.name && this.submitted }" v-model="name" type="text" class="form-control" placeholder="Name">
+                        <div class="errors" v-if="errors.name">
+                            <small class="text-danger" v-for="error in errors.name" :key="error">{{ error }}</small>
+                        </div>
                     </div>
+
                     <div class="form-group">
-                        <input v-model="email" type="text" class="form-control" placeholder="Email">
+                        <input v-bind:class="{ 'is_invalid': errors.email, 'is_valid': !errors.email && this.submitted }" v-model="email" type="text" class="form-control" placeholder="Email">
+                        <div class="errors" v-if="errors.email">
+                            <small class="text-danger" v-for="error in errors.email" :key="error">{{ error }}</small>
+                        </div>
                     </div>
+
                     <div class="form-group">
-                        <input v-model="password" type="password" class="form-control" placeholder="Password">
+                        <input v-bind:class="{ 'is_invalid': errors.password, 'is_valid': !errors.password && this.submitted }" v-model="password" type="password" class="form-control" placeholder="Password">
+                        <div class="errors" v-if="errors.password">
+                            <small class="text-danger" v-for="error in errors.password" :key="error">{{ error }}</small>
+                        </div>
                     </div>
+
                     <div class="form-group text-center">
                         <button @click="registerUser" class="form-control btn btn-success">Signup</button>
                     </div>
@@ -21,6 +34,15 @@
         </div>
     </div>
 </template>
+
+<style scoped>
+.is_invalid{
+    border-color: #a94442;
+}
+.is_valid{
+    border-color: #3c763d;
+}
+</style>
 
 <script>
 import Axios from 'axios'
@@ -31,6 +53,8 @@ export default {
             name: '',
             email: '',
             password: '',
+            errors: {},
+            submitted: false,
         }
     },
 
@@ -42,6 +66,7 @@ export default {
                 password: this.password
 
             }).then((response) => {
+                this.submitted = true
                 const { data } = response.data;
                 localStorage.setItem('auth', JSON.stringify(data))
                 this.$root.auth = data
@@ -49,8 +74,8 @@ export default {
                 this.$router.push('home')
 
             }).catch(({ response }) => {
-                console.log(response);
-                
+                this.submitted = true
+                this.errors = response.data                
             })
             
         }
