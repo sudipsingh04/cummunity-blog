@@ -16,10 +16,13 @@
                                 {{ category.name }}
                             </option>
                         </select>
-                        <input type="text" placeholder="Title" class="form-control my-3">
+                        <input type="text" placeholder="Title" v-model="title" class="form-control my-3">
                         <wysiwyg v-model="content" />
                         <div class="text-center">
-                            <button @click="createArticle" class="btn-success btn-lg mt-3">Create Article</button>
+                            <button :disabled='loading' @click="createArticle" class="btn-success btn-lg mt-3">
+                                <i class="fa fa-spin fa-spinner" v-if="loading"></i>
+                                {{ loading ? '' : 'Create Article' }}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -35,6 +38,14 @@ import Axios from 'axios'
 
 export default {
 
+    beforeRouteEnter(to, from, next) {
+        if(! localStorage.getItem('auth')){
+            return next({ path: '/login' })
+        }
+
+        next()
+    },
+
     mounted(){
         this.getCategories()
     },
@@ -45,10 +56,12 @@ export default {
 
     data(){
         return{
+            title: '',
             content: "",
             image: null,
             categories: [],
-            category: ''
+            category: '',
+            loading: false
         }
     },
 
@@ -58,13 +71,41 @@ export default {
         },
 
         createArticle(){
+
+            if(!this.title || !this.image || !this.category || !this.content){
+                this.$noty.error("Please fill in all fields")
+                return
+            }
+
+            this.loading = true
             const form = new FormData();
             form.append('file', this.image)
             form.append('upload_preset', process.env.VUE_APP_CLOUDINARY_PRESET)
             form.append('api_key', process.env.VUE_APP_CLOUDINARY_API_KEY)
 
             Axios.post(process.env.VUE_APP_CLOUDINARY_URL, form)
-            .then(res => console.log(res))
+            .then(res => 
+                Axios.post(`${config.apiUrl}/articles`, {
+                    title: this.title,
+                    content: this.content,
+                    category_id: this.category,
+                    imageUrl: res.data.secure_url
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${this.$root.auth.token}`
+                    }
+                }).then(() => {
+                    this.loading = false
+                    this.$noty.success('Article created successfully')
+                    this.$router.push("/")
+                }).catch(() => {
+                    this.loading = false
+                    this.$noty.error("Oops, something went wrong!")
+                })
+            ).catch(() => {
+                this.loading = false
+                this.$noty.error("Oops, something went wrong!")
+            })
         },
 
         getCategories(){
