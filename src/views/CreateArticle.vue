@@ -10,7 +10,13 @@
                         button-class="btn btn-danger"
                         @change="onChange">
                         </picture-input>
-                        <input type="text" placeholder="Title" class="form-control mb-3">
+                        <select class="form-control my-3" v-model="category">
+                            <option selected>Select a Category</option>
+                            <option :key="category.id" value="category.id" v-for="category in categories">
+                                {{ category.name }}
+                            </option>
+                        </select>
+                        <input type="text" placeholder="Title" class="form-control my-3">
                         <wysiwyg v-model="content" />
                         <div class="text-center">
                             <button @click="createArticle" class="btn-success btn-lg mt-3">Create Article</button>
@@ -24,9 +30,14 @@
 
 <script>
 import PictureInput from 'vue-picture-input'
+import config from '@/config'
 import Axios from 'axios'
 
 export default {
+
+    mounted(){
+        this.getCategories()
+    },
 
     components: {
         PictureInput
@@ -36,6 +47,8 @@ export default {
         return{
             content: "",
             image: null,
+            categories: [],
+            category: ''
         }
     },
 
@@ -52,6 +65,20 @@ export default {
 
             Axios.post(process.env.VUE_APP_CLOUDINARY_URL, form)
             .then(res => console.log(res))
+        },
+
+        getCategories(){
+            const categories = localStorage.getItem('categories')
+
+            if(categories){
+                this.categories = JSON.parse(categories)
+                return
+            }
+
+            Axios.get(`${config.apiUrl}/categories`).then(res => {
+                this.categories = res.data.categories
+                localStorage.setItem("categories", JSON.stringify(this.categories))
+            })
         }
     }
 }
