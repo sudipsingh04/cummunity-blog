@@ -3,8 +3,10 @@ import App from './App.vue'
 import router from './router'
 import VueNoty from 'vuejs-noty'
 import 'vuejs-noty/dist/vuejs-noty.css'
+import VueDisqus from 'vue-disqus'
 
 Vue.use(VueNoty)
+Vue.use(VueDisqus)
 
 Vue.config.productionTip = false
 
