@@ -1,4 +1,9 @@
-# community-blog
+# Community Blog
+
+## Project URL
+```
+https://sudip-blog.netlify.com/
+```
 
 ## Project setup
 ```
